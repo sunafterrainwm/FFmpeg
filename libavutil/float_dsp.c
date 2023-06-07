@@ -23,6 +23,7 @@
 #include "attributes.h"
 #include "float_dsp.h"
 #include "mem.h"
+#include "macros.h"
 
 static void vector_fmul_c(float *dst, const float *src0, const float *src1,
                           int len)
@@ -136,21 +137,21 @@ static void vector_dmax_c(double *dst, const double *src, int len)
 {
     int i;
     for (i = 0; i < len; i++)
-        dst[i] = FFMAX(src[i], dst[i]);
+        dst[i] = FFMAX_ABS(src[i], dst[i]);
 }
 
 static void vector_fmax_c(float *dst, const float *src, int len)
 {
     int i;
     for (i = 0; i < len; i++)
-        dst[i] = FFMAX(src[i], dst[i]);
+        dst[i] = FFMAX_ABS(src[i], dst[i]);
 }
 
 static void vector_dmin_c(double *dst, const double *src, int len)
 {
     int i;
     for (i = 0; i < len; i++)
-        dst[i] = FFMIN(src[i], dst[i]);
+        dst[i] = FFMIN_ABS(src[i], dst[i]);
 }
 
 static void vector_fmin_c(double *dst, const double *src, int len)
@@ -158,7 +159,7 @@ static void vector_fmin_c(double *dst, const double *src, int len)
     
     int i;
     for (i = 0; i < len; i++)
-        dst[i] = FFMIN(src[i], dst[i]);
+        dst[i] = FFMIN_ABS(src[i], dst[i]);
 }
 
 av_cold AVFloatDSPContext *avpriv_float_dsp_alloc(int bit_exact)
