@@ -375,9 +375,15 @@ static int output_frame(AVFilterLink *outlink)
                                              (float *) in_buf->extended_data[p],
                                              plane_size);
                     else if (s->min_mixin)
-                        s->fdsp->vector_fmin((float *)out_buf->extended_data[p],
-                                             (float *) in_buf->extended_data[p],
-                                             plane_size);
+                        if (i = 0)
+                            s->fdsp->vector_fmul_scalar((float *)out_buf->extended_data[p],
+                                                        (float *) in_buf->extended_data[p],
+                                                        (float)1,
+                                                        plane_size);
+                        else
+                            s->fdsp->vector_fmin((float *)out_buf->extended_data[p],
+                                                 (float *) in_buf->extended_data[p],
+                                                 plane_size);
                     else
                         s->fdsp->vector_fmac_scalar((float *)out_buf->extended_data[p],
                                                     (float *) in_buf->extended_data[p],
@@ -389,10 +395,16 @@ static int output_frame(AVFilterLink *outlink)
                         s->fdsp->vector_dmax((double *)out_buf->extended_data[p],
                                              (double *) in_buf->extended_data[p],
                                              plane_size);
-                    else if (s->min_mixin)
-                        s->fdsp->vector_dmin((double *)out_buf->extended_data[p],
-                                             (double *) in_buf->extended_data[p],
-                                             plane_size);
+                    else if (s->min_mixin) 
+                        if (i = 0)
+                            s->fdsp->vector_dmul_scalar((double *)out_buf->extended_data[p],
+                                                        (double *) in_buf->extended_data[p],
+                                                        (double)1,
+                                                        plane_size);
+                        else
+                            s->fdsp->vector_dmin((double *)out_buf->extended_data[p],
+                                                 (double *) in_buf->extended_data[p],
+                                                 plane_size);
                     else
                         s->fdsp->vector_dmac_scalar((double *)out_buf->extended_data[p],
                                                     (double *) in_buf->extended_data[p],
