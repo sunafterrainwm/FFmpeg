@@ -641,9 +641,10 @@ static int process_command(AVFilterContext *ctx, const char *cmd, const char *ar
             return AVERROR(EINVAL);
         }
         s->weight_sum = s->nb_inputs;
-        for (int i = 0; i < s->nb_inputs; i++)
+        for (int i = 0; i < s->nb_inputs; i++) {
             s->weights[i] = 1;
             s->scale_norm[i] = 1 / s->nb_inputs;
+        }
         calculate_scales(s, 0);
     } else {
         parse_weights(ctx);
