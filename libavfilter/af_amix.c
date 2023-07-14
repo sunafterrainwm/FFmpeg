@@ -165,6 +165,8 @@ typedef struct MixContext {
     float dropout_transition;   /**< transition time when an input drops out */
     char *weights_str;          /**< string for custom weights for every input */
     int normalize;              /**< if inputs are scaled */
+    int max_mixin;              /**< if use max mixin */
+    int min_mixin;              /**< if use min mixin */
 
     int nb_channels;            /**< number of channels */
     int sample_rate;            /**< sample rate */
@@ -198,6 +200,10 @@ static const AVOption amix_options[] = {
             OFFSET(weights_str), AV_OPT_TYPE_STRING, {.str="1 1"}, 0, 0, A|F|T },
     { "normalize", "Scale inputs",
             OFFSET(normalize), AV_OPT_TYPE_BOOL, {.i64=1}, 0, 1, A|F|T },
+    { "max_mixin", "Use max minin. weights would be ignore.",
+            OFFSET(max_mixin), AV_OPT_TYPE_BOOL, {.i64=0}, 0, 1, A|F|T },
+    { "min_mixin", "Use max minin. weights would be ignore.",
+            OFFSET(min_mixin), AV_OPT_TYPE_BOOL, {.i64=0}, 0, 1, A|F|T },
     { NULL }
 };
 
@@ -364,15 +370,45 @@ static int output_frame(AVFilterLink *outlink)
             if (out_buf->format == AV_SAMPLE_FMT_FLT ||
                 out_buf->format == AV_SAMPLE_FMT_FLTP) {
                 for (p = 0; p < planes; p++) {
-                    s->fdsp->vector_fmac_scalar((float *)out_buf->extended_data[p],
-                                                (float *) in_buf->extended_data[p],
-                                                s->input_scale[i], plane_size);
+                    if (s->max_mixin)
+                        s->fdsp->vector_fmax((float *)out_buf->extended_data[p],
+                                             (float *) in_buf->extended_data[p],
+                                             plane_size);
+                    else if (s->min_mixin)
+                        if (i = 0)
+                            s->fdsp->vector_fmul_scalar((float *)out_buf->extended_data[p],
+                                                        (float *) in_buf->extended_data[p],
+                                                        (float)1,
+                                                        plane_size);
+                        else
+                            s->fdsp->vector_fmin((float *)out_buf->extended_data[p],
+                                                 (float *) in_buf->extended_data[p],
+                                                 plane_size);
+                    else
+                        s->fdsp->vector_fmac_scalar((float *)out_buf->extended_data[p],
+                                                    (float *) in_buf->extended_data[p],
+                                                    s->input_scale[i], plane_size);
                 }
             } else {
                 for (p = 0; p < planes; p++) {
-                    s->fdsp->vector_dmac_scalar((double *)out_buf->extended_data[p],
-                                                (double *) in_buf->extended_data[p],
-                                                s->input_scale[i], plane_size);
+                    if (s->max_mixin)
+                        s->fdsp->vector_dmax((double *)out_buf->extended_data[p],
+                                             (double *) in_buf->extended_data[p],
+                                             plane_size);
+                    else if (s->min_mixin) 
+                        if (i = 0)
+                            s->fdsp->vector_dmul_scalar((double *)out_buf->extended_data[p],
+                                                        (double *) in_buf->extended_data[p],
+                                                        (double)1,
+                                                        plane_size);
+                        else
+                            s->fdsp->vector_dmin((double *)out_buf->extended_data[p],
+                                                 (double *) in_buf->extended_data[p],
+                                                 plane_size);
+                    else
+                        s->fdsp->vector_dmac_scalar((double *)out_buf->extended_data[p],
+                                                    (double *) in_buf->extended_data[p],
+                                                    s->input_scale[i], plane_size);
                 }
             }
         }
@@ -599,10 +635,23 @@ static int process_command(AVFilterContext *ctx, const char *cmd, const char *ar
     if (ret < 0)
         return ret;
 
-    parse_weights(ctx);
-    for (int i = 0; i < s->nb_inputs; i++)
-        s->scale_norm[i] = s->weight_sum / FFABS(s->weights[i]);
-    calculate_scales(s, 0);
+    if (s->max_mixin || s->min_mixin) {
+        if (s->max_mixin && s->min_mixin) {
+            av_log(ctx, AV_LOG_ERROR, "max_mixin and min_mixin cannot be used together\n");
+            return AVERROR(EINVAL);
+        }
+        s->weight_sum = s->nb_inputs;
+        for (int i = 0; i < s->nb_inputs; i++) {
+            s->weights[i] = 1;
+            s->scale_norm[i] = 1 / s->nb_inputs;
+        }
+        calculate_scales(s, 0);
+    } else {
+        parse_weights(ctx);
+        for (int i = 0; i < s->nb_inputs; i++)
+            s->scale_norm[i] = s->weight_sum / FFABS(s->weights[i]);
+        calculate_scales(s, 0);
+    }
 
     return 0;
 }

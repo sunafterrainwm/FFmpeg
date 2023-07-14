@@ -189,6 +189,58 @@ typedef struct AVFloatDSPContext {
      */
     void (*vector_dmul)(double *dst, const double *src0, const double *src1,
                         int len);
+
+    /**
+     * Sets the destination vector to be the float precision vector or the destination vector,
+     * whichever is larger. The second vector of floats is iterated over in reverse order.
+     *
+     * @param dst result vector
+     *            constraints: 32-byte aligned
+     * @param src input vector
+     *            constraints: 32-byte aligned
+     * @param len length of vector
+     *            constraints: multiple of 16
+     */
+    void (*vector_fmax)(float *dst, const float *src, int len);
+
+    /**
+     * Sets the destination vector to be the double precision vector or the destination vector,
+     * whichever is larger. The second vector of floats is iterated over in reverse order.
+     *
+     * @param dst result vector
+     *            constraints: 32-byte aligned
+     * @param src input vector
+     *            constraints: 32-byte aligned
+     * @param len length of vector
+     *            constraints: multiple of 16
+     */
+    void (*vector_dmax)(double *dst, const double *src, int len);
+
+    /**
+     * Sets the destination vector to be the float precision vector or the destination vector,
+     * whichever is smaller. The second vector of floats is iterated over in reverse order.
+     *
+     * @param dst result vector
+     *            constraints: 32-byte aligned
+     * @param src input vector
+     *            constraints: 32-byte aligned
+     * @param len length of vector
+     *            constraints: multiple of 16
+     */
+    void (*vector_fmin)(float *dst, const float *src, int len);
+
+    /**
+     * Sets the destination vector to be the double precision vector or the destination vector,
+     * whichever is smaller. The second vector of floats is iterated over in reverse order.
+     *
+     * @param dst result vector
+     *            constraints: 32-byte aligned
+     * @param src input vector
+     *            constraints: 32-byte aligned
+     * @param len length of vector
+     *            constraints: multiple of 16
+     */
+    void (*vector_dmin)(double *dst, const double *src, int len);
 } AVFloatDSPContext;
 
 /**

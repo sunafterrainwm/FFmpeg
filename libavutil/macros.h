@@ -49,6 +49,10 @@
 #define FFMIN(a,b) ((a) > (b) ? (b) : (a))
 #define FFMIN3(a,b,c) FFMIN(FFMIN(a,b),c)
 
+#define _FFABS(a) ((a) >= 0 ? (a) : (-(a)))
+#define FFMAX_ABS(a,b) (_FFABS(a) > _FFABS(b) ? (a) : (b))
+#define FFMIN_ABS(a,b) (_FFABS(a) > _FFABS(b) ? (b) : (a))
+
 #define FFSWAP(type,a,b) do{type SWAP_tmp= b; b= a; a= SWAP_tmp;}while(0)
 #define FF_ARRAY_ELEMS(a) (sizeof(a) / sizeof((a)[0]))
 
